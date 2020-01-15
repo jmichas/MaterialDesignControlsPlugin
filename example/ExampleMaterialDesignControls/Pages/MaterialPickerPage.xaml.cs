@@ -105,7 +105,7 @@ namespace ExampleMaterialDesignControls.Pages
 
         public async void OnTap3(object parameter)
         {
-           // this.pckDoubleWithFocus.Focus();
+            this.pckDoubleWithFocus.Focus();
         }
     }
 }

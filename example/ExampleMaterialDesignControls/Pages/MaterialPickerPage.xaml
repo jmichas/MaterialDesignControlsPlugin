@@ -78,16 +78,15 @@
 					Icon="save.png"
 					Text="Save" />
 
-				<!--<material:MaterialDoublePicker
+				<material:MaterialDoublePicker
 					x:Name="pckDoubleWithFocus"
-					
 					ItemsSource="{Binding ItemsSource}"
 					LabelText="Double Picker"
 					SecondaryItemsSource="{Binding SecondaryItemsSource}"
 					SecondarySelectedItem="{Binding SecondarySelectedItem}"
 					SelectedItem="{Binding SelectedItem}"
 					Separator=" - "
-					Type="Filled" />-->
+					Type="Filled" />
 
 				<material:MaterialButton Command="{Binding Tap3Command}" Text="Focus" />
 			</StackLayout>
