@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Plugin.MaterialDesignControls.Animations;
 using Xamarin.Forms;
@@ -104,20 +105,20 @@ namespace Plugin.MaterialDesignControls
         }
 
         public static readonly BindableProperty SelectedItemProperty =
-            BindableProperty.Create(nameof(SelectedItem), typeof(string), typeof(MaterialDoublePicker), defaultValue: null, propertyChanged: OnSelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
+            BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(MaterialDoublePicker), defaultValue: null, propertyChanged: OnSelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
 
-        public string SelectedItem
+        public object SelectedItem
         {
-            get { return (string)GetValue(SelectedItemProperty); }
+            get { return GetValue(SelectedItemProperty); }
             set { SetValue(SelectedItemProperty, value); }
         }
 
         public static readonly BindableProperty SecondarySelectedItemProperty =
-            BindableProperty.Create(nameof(SecondarySelectedItem), typeof(string), typeof(MaterialDoublePicker), defaultValue: null, propertyChanged: OnSecondarySelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
+            BindableProperty.Create(nameof(SecondarySelectedItem), typeof(object), typeof(MaterialDoublePicker), defaultValue: null, propertyChanged: OnSecondarySelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
 
-        public string SecondarySelectedItem
+        public object SecondarySelectedItem
         {
-            get { return (string)GetValue(SecondarySelectedItemProperty); }
+            get { return GetValue(SecondarySelectedItemProperty); }
             set { SetValue(SecondarySelectedItemProperty, value); }
         }
 
@@ -348,6 +349,58 @@ namespace Plugin.MaterialDesignControls
         {
             get { return this.pckOptions.IsFocused; }
         }
+        
+        BindingBase _itemSourceDisplayBinding;
+        public BindingBase ItemSourceDisplayBinding
+        {
+            get { return _itemSourceDisplayBinding; }
+            set
+            {
+                if (_itemSourceDisplayBinding == value)
+                    return;
+
+                OnPropertyChanging();
+                var oldValue = value;
+                _itemSourceDisplayBinding = value;
+                OnItemDisplayBindingChanged(oldValue, _itemSourceDisplayBinding);
+                OnPropertyChanged();
+            }
+        }
+
+        BindingBase _secondaryItemSourceDisplayBinding;
+        public BindingBase SecondaryItemSourceDisplayBinding
+        {
+            get { return _secondaryItemSourceDisplayBinding; }
+            set
+            {
+                if (_secondaryItemSourceDisplayBinding == value)
+                    return;
+
+                OnPropertyChanging();
+                var oldValue = value;
+                _secondaryItemSourceDisplayBinding = value;
+                OnItemDisplayBindingChanged(oldValue, _secondaryItemSourceDisplayBinding);
+                OnPropertyChanged();
+            }
+        }
+
+        string GetDisplayMember(object item, BindingBase binding)
+        {
+            if (binding == null)
+                return item.ToString();
+
+            var propName = ((Binding)binding).Path;
+            var itemType = item.GetType();
+            var propInfo = itemType.GetProperty(propName);
+            var val = propInfo.GetValue(item).ToString();
+          
+            return val;
+        }
+
+        void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
+        {
+            //ResetItems();
+        }
 
         #endregion Properties
 
@@ -371,6 +424,7 @@ namespace Plugin.MaterialDesignControls
             control.InternalUpdateSelectedIndex();
         }
 
+        //TODO this is where we invoke the ItemDisplayBinding somehow and populate the Items and SecondaryItems Lists
         private static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var control = (MaterialDoublePicker)bindable;
@@ -379,7 +433,8 @@ namespace Plugin.MaterialDesignControls
             {
                 foreach (var item in (IEnumerable)newValue)
                 {
-                    control.pckOptions.Items.Add(item.ToString());
+                    var displayText = control.GetDisplayMember(item, control.ItemSourceDisplayBinding);
+                    control.pckOptions.Items.Add(displayText);
                 }
             }
             control.InternalUpdateSelectedIndex();
@@ -393,7 +448,8 @@ namespace Plugin.MaterialDesignControls
             {
                 foreach (var item in (IEnumerable)newValue)
                 {
-                    control.pckOptions.SecondaryItems.Add(item.ToString());
+                    var displayText = control.GetDisplayMember(item, control.SecondaryItemSourceDisplayBinding);
+                    control.pckOptions.SecondaryItems.Add(displayText);
                 }
             }
             control.InternalUpdateSelectedIndex();
@@ -438,8 +494,16 @@ namespace Plugin.MaterialDesignControls
         {
             if (!this.initialized)
             {
-                this.InitializeComponent();
-                this.initialized = true;
+                try
+                {
+                    this.InitializeComponent();
+                    this.initialized = true;
+                }
+                catch (Exception e)
+                {
+                    //HACK: When run using XF 4.4 there are a bunch of NameScope errors, not sure why
+                    Debug.WriteLine("MediaDoublePicker.xaml.xs  : " + e.Message + " : Property - " + propertyName);
+                }
             }
 
             switch (propertyName)
@@ -620,7 +684,7 @@ namespace Plugin.MaterialDesignControls
                 {
                     if (index.Equals(e.SelectedIndexes[0]))
                     {
-                        this.SelectedItem = item.ToString();
+                        this.SelectedItem = item;
                         break;
                     }
                     index++;
@@ -634,7 +698,7 @@ namespace Plugin.MaterialDesignControls
                 {
                     if (index.Equals(e.SelectedIndexes[1]))
                     {
-                        this.SecondarySelectedItem = item.ToString();
+                        this.SecondarySelectedItem = item;
                         break;
                     }
                     index++;

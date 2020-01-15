@@ -10,13 +10,13 @@ namespace ExampleMaterialDesignControls.Pages
     {
         public string SelectedSizes { get; set; }
 
-        public string SelectedItem { get; set; }
+        public object SelectedItem { get; set; }
 
-        public string SecondarySelectedItem { get; set; }
+        public object SecondarySelectedItem { get; set; }
 
-        public List<string> ItemsSource { get; set; }
+        public List<Measurement> ItemsSource { get; set; }
 
-        public List<string> SecondaryItemsSource { get; set; }
+        public List<Monkey> SecondaryItemsSource { get; set; }
 
         public MaterialPickerPage()
         {
@@ -33,10 +33,20 @@ namespace ExampleMaterialDesignControls.Pages
             this.pckModels4.ItemsSource = new List<string> { "Model A", "Model B", "Model C", "Model D" };
 
             this.pckDouble.SelectedIndexesChanged += PckDouble_SelectedIndexChanged;
-            this.ItemsSource = new List<string> { "Model 1", "Model 2", "Model 3", "Model 4" };
-            this.SecondaryItemsSource = new List<string> { "A", "B", "C", "D" };
-            this.SelectedItem = "Model 2";
-            this.SecondarySelectedItem = "C";
+            this.ItemsSource = new List<Measurement> { 
+                new Measurement{Data=1,Display="1 Foot" },
+                new Measurement{Data=2,Display="2 Foot" },
+                new Measurement{Data=3,Display="3 Foot" },
+                new Measurement{Data=4,Display="4 Foot" }
+            };
+            this.SecondaryItemsSource = new List<Monkey> {
+                new Monkey{Id=1,Name="Rhesus"},
+                new Monkey{Id=1,Name="Mandrill"},
+                new Monkey{Id=1,Name="Macaque"},
+                new Monkey{Id=1,Name="Proboscis"},
+            };
+            this.SelectedItem = ItemsSource[1];
+            this.SecondarySelectedItem = SecondaryItemsSource[2];
 
             this.TapCommand = new Command<string>(OnTap);
 
@@ -47,6 +57,17 @@ namespace ExampleMaterialDesignControls.Pages
             this.BindingContext = this;
         }
 
+        public class Measurement
+        {
+            public int Data { get; set; }
+            public string Display { get; set; }
+        }
+
+        public class Monkey
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
         private void PckDouble_SelectedIndexChanged(object sender, SelectedIndexesEventArgs e)
         {
             this.lblSelectedIndexes.Text = $"SelectedIndexes: {e.SelectedIndexes[0]} - {e.SelectedIndexes[1]}";
@@ -61,7 +82,8 @@ namespace ExampleMaterialDesignControls.Pages
 
         public async void OnTap(object parameter)
         {
-            if (!string.IsNullOrEmpty(this.pckColors.SelectedItem))
+            //if (!string.IsNullOrEmpty(this.pckColors.SelectedItem))
+            if(this.pckColors.SelectedItem!=null)
             {
                 this.pckColors.AssistiveText = null;
                 await this.DisplayAlert("Saved", !string.IsNullOrEmpty(this.SelectedSizes) ? this.SelectedSizes : "Select option", "Ok");
@@ -83,7 +105,7 @@ namespace ExampleMaterialDesignControls.Pages
 
         public async void OnTap3(object parameter)
         {
-            this.pckDoubleWithFocus.Focus();
+           // this.pckDoubleWithFocus.Focus();
         }
     }
 }

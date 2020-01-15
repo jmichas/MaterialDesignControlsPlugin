@@ -7,6 +7,7 @@ namespace Plugin.MaterialDesignControls.Implementations
 {
     public class DoublePicker : Picker
     {
+        
         public TextAlignment HorizontalTextAlignment { get; set; }
 
         public string Placeholder { get; set; }

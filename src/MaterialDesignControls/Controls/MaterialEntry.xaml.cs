@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -373,8 +374,14 @@ namespace Plugin.MaterialDesignControls
         {
             if (!this.initialized)
             {
-                this.InitializeComponent();
-                this.initialized = true;
+                try
+                {
+                    this.InitializeComponent();
+                    this.initialized = true;
+                }catch(Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                }
             }
 
             // TODO: Check if you can take out the strong password.

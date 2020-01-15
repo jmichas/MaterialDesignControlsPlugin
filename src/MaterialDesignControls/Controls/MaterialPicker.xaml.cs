@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Plugin.MaterialDesignControls.Animations;
 using Xamarin.Forms;
@@ -95,11 +96,11 @@ namespace Plugin.MaterialDesignControls
         }
 
         public static readonly BindableProperty SelectedItemProperty =
-            BindableProperty.Create(nameof(SelectedItem), typeof(string), typeof(MaterialPicker), defaultValue: null, propertyChanged: OnSelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
+            BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(MaterialPicker), defaultValue: null, propertyChanged: OnSelectedItemChanged, defaultBindingMode: BindingMode.TwoWay);
 
-        public string SelectedItem
+        public object SelectedItem
         {
-            get { return (string)GetValue(SelectedItemProperty); }
+            get { return GetValue(SelectedItemProperty); }
             set { SetValue(SelectedItemProperty, value); }
         }
 
@@ -300,7 +301,42 @@ namespace Plugin.MaterialDesignControls
         {
             get { return this.pckOptions.IsFocused; }
         }
+        /*
+        BindingBase _itemDisplayBinding;
+        public BindingBase ItemDisplayBinding
+        {
+            get { return _itemDisplayBinding; }
+            set
+            {
+                if (_itemDisplayBinding == value)
+                    return;
 
+                OnPropertyChanging();
+                var oldValue = value;
+                _itemDisplayBinding = value;
+                OnItemDisplayBindingChanged(oldValue, _itemDisplayBinding);
+                OnPropertyChanged();
+            }
+        }
+
+        static readonly BindableProperty s_displayProperty =
+            BindableProperty.Create("Display", typeof(string), typeof(MaterialPicker), default(string));
+
+        string GetDisplayMember(object item)
+        {
+            if (ItemDisplayBinding == null)
+                return item.ToString();
+
+            ItemDisplayBinding.Apply(item, this, s_displayProperty);
+            ItemDisplayBinding.Unapply();
+            return (string)GetValue(s_displayProperty);
+        }
+
+        void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
+        {
+            ResetItems();
+        }
+        */
         #endregion Properties
 
         #region Methods
@@ -308,7 +344,7 @@ namespace Plugin.MaterialDesignControls
         private static void OnSelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var control = (MaterialPicker)bindable;
-            control.pckOptions.SelectedItem = (string)newValue;
+            control.pckOptions.SelectedItem = newValue;
         }
 
         private static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -348,8 +384,14 @@ namespace Plugin.MaterialDesignControls
         {
             if (!this.initialized)
             {
-                this.InitializeComponent();
-                this.initialized = true;
+                try
+                {
+                    this.InitializeComponent();
+                    this.initialized = true;
+                }catch(Exception e)
+                {
+                    Debug.WriteLine("MediaPicker.xaml.xs  : " + e.Message + " : Property - " + propertyName);
+                }
             }
 
             switch (propertyName)
@@ -526,7 +568,7 @@ namespace Plugin.MaterialDesignControls
                 {
                     if (index.Equals(this.pckOptions.SelectedIndex))
                     {
-                        this.SelectedItem = item.ToString();
+                        this.SelectedItem = item;
                         if (this.SelectedIndexChanged != null)
                         {
                             this.SelectedIndexChanged.Invoke(this, e);
